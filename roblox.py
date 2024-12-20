@@ -1,5 +1,6 @@
 import requests
-import time
+from concurrent.futures import ThreadPoolExecutor
+from time import sleep
 from colorama import Fore, Style, init
 
 init()
@@ -22,14 +23,17 @@ def check_username(username):
 
     except requests.exceptions.RequestException as e:
         print(Fore.YELLOW + f"glitch {username}: {e}" + Style.RESET_ALL)
+    
+    # Add a small delay to respect the server
+    sleep(0.5)
 
 def main():
     with open("usernames.txt", "r") as file:
         usernames = file.read().splitlines()
 
-    for username in usernames:
-        check_username(username)
-        time.sleep(2)
+    # Use ThreadPoolExecutor with reduced workers
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        executor.map(check_username, usernames)
 
 if __name__ == "__main__":
     main()
